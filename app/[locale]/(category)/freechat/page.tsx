@@ -8,6 +8,7 @@ import messagesMap from "@/messages";
 import type { AppLocale } from "@/messages"; 
 import CamGrid from "@/components/CamGrid";
 import CategoryContent from "@/components/CategoryContent";
+import { getTopSiteImageUrl } from "@/lib/getTopSiteImage";
 
 export async function generateMetadata({
   params,
@@ -52,6 +53,9 @@ export async function generateMetadata({
   const finalTitle = (categorySeoData.title || seoData.title || "Free Chat").replace("{year}", currentYear.toString());
   const finalOpenGraphTitle = (openGraphData.title || categorySeoData.title || seoData.title || "Free Chat").replace("{year}", currentYear.toString());
 
+  // Get top-ranked site's hero image for og:image
+  const ogImageUrl = getTopSiteImageUrl("freecams", BASE_URL);
+
   return {
     metadataBase: categorySeoData.metadataBase ? new URL(categorySeoData.metadataBase) : (seoData.metadataBase ? new URL(seoData.metadataBase) : new URL(BASE_URL)),
     title: finalTitle,
@@ -60,13 +64,13 @@ export async function generateMetadata({
       type: openGraphData.type || "website",
       title: finalOpenGraphTitle,
       description: openGraphData.description || categorySeoData.description || seoData.description || "",
-      images: openGraphData.image ? [openGraphData.image] : [{
-        url: `${BASE_URL}/images/og-image.jpg`,
+      images: [{
+        url: ogImageUrl,
         width: 1200,
         height: 630,
         alt: finalOpenGraphTitle,
       }],
-      url: openGraphData.url || pageUrl,
+      url: pageUrl,
       siteName: openGraphData.siteName || "Top Chats",
       locale: safeLocale,
     },
@@ -74,7 +78,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: finalOpenGraphTitle,
       description: openGraphData.description || categorySeoData.description || seoData.description || "",
-      images: openGraphData.image ? [openGraphData.image] : [`${BASE_URL}/images/og-image.jpg`],
+      images: [ogImageUrl],
     },
     alternates: {
       canonical: canonical,

@@ -67,7 +67,7 @@ export async function generateMetadata({
         height: 630,
         alt: finalOpenGraphTitle,
       }],
-      url: openGraphData.url || pageUrl,
+      url: pageUrl,
       siteName: openGraphData.siteName || "Top Chats",
       locale: safeLocale,
     },
