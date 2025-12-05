@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import messagesMap from "@/messages"; 
 import type { AppLocale } from "@/messages";
+import { getTopSiteImageUrl } from "@/lib/getTopSiteImage";
 
 // Helper function to capitalize text
 function capitalizeText(text: string): string {
@@ -52,21 +53,25 @@ export async function generateMetadata({
     ? `${capitalizedQuery}, ${seoData.Keywords}`
     : seoData.Keywords;
 
-  // Generate full page URL dynamically
-  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://x-chats.com";
+  // Use environment variables for URLs
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "";
+  const IMAGE_URL = process.env.NEXT_PUBLIC_IMAGE_URL || SITE_URL;
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") || "";
   
   // Use pathname if available, otherwise construct from locale
-  let pageUrl = `${BASE_URL}/search`;
+  let pageUrl = `${SITE_URL}/search`;
   if (pathname && pathname !== "/") {
-    pageUrl = `${BASE_URL}${pathname}${hasQuery ? `?q=${encodeURIComponent(query)}` : ""}`;
+    pageUrl = `${SITE_URL}${pathname}${hasQuery ? `?q=${encodeURIComponent(query)}` : ""}`;
   } else {
-    pageUrl = locale === "en" ? `${BASE_URL}/search${hasQuery ? `?q=${encodeURIComponent(query)}` : ""}` : `${BASE_URL}/${locale}/search${hasQuery ? `?q=${encodeURIComponent(query)}` : ""}`;
+    pageUrl = locale === "en" ? `${SITE_URL}/search${hasQuery ? `?q=${encodeURIComponent(query)}` : ""}` : `${SITE_URL}/${locale}/search${hasQuery ? `?q=${encodeURIComponent(query)}` : ""}`;
   }
 
+  // Get top-ranked site's hero image for og:image
+  const ogImageUrl = getTopSiteImageUrl("top10chat", IMAGE_URL);
+
   return {
-    metadataBase: new URL(BASE_URL),
+    metadataBase: SITE_URL ? new URL(SITE_URL) : undefined,
     title: title,
     description: description,
     keywords: keywords,
@@ -78,7 +83,7 @@ export async function generateMetadata({
       title: title,
       description: description,
       images: [{
-        url: `${BASE_URL}/images/og-image.jpg`,
+        url: ogImageUrl,
         width: 1200,
         height: 630,
         alt: title,
@@ -88,7 +93,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: title,
       description: description,
-      images: [`${BASE_URL}/images/og-image.jpg`],
+      images: [ogImageUrl],
     },
     robots: {
       index: true,

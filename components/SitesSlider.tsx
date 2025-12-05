@@ -110,7 +110,7 @@ const Card = ({ hero, logo, title, visitUrl, reviewUrl, rating, slug }: CardData
       </Link>
 
         <Link
-          href={`/${locale}/sites/${slug}`}
+          href={`/${locale}/site/${slug}`}
           className="text-black underline uppercase text-[12px] hover:text-[var(--primary)] mx-auto"
         >
         {t("readReview")}

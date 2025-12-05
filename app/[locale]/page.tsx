@@ -9,6 +9,7 @@ import { headers } from "next/headers";
 import messagesMap from "@/messages";
 import type { AppLocale } from "@/messages";
 import CategoryContent from "@/components/CategoryContent";
+import { getTopSiteImageUrl } from "@/lib/getTopSiteImage";
 
 
 export async function generateMetadata({
@@ -26,27 +27,44 @@ export async function generateMetadata({
   const seoData = localization.indexPage?.seo || {};
   const openGraphData = seoData.openGraph || {};
 
-  // Generate languages object for alternates from available locales
+  // Use environment variables for URLs
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "";
+  
+  // Generate languages object for alternates from available locales with full URLs
+  const cleanSiteUrl = SITE_URL.replace(/\/e-01\/?$/, "").replace(/\/e-01\//, "/");
   const languages: Record<string, string> = {};
   Object.keys(messagesMap).forEach((loc) => {
-    languages[loc] = loc === "en" ? "/" : `/${loc}`;
+    const path = `/${loc}`;
+    languages[loc] = cleanSiteUrl ? `${cleanSiteUrl}${path}` : path;
   });
 
   // Generate canonical URL
   const canonical = locale === "en" ? "/" : `/${locale}`;
-  
-  // Generate full page URL dynamically
-  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://x-chats.com";
+  const IMAGE_URL = process.env.NEXT_PUBLIC_IMAGE_URL || SITE_URL;
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") || "";
   
   // Use pathname if available, otherwise construct from locale
-  let pageUrl = BASE_URL;
+  let pageUrl = SITE_URL;
   if (pathname && pathname !== "/") {
-    pageUrl = `${BASE_URL}${pathname}`;
+    pageUrl = `${SITE_URL}${pathname}`;
   } else {
-    pageUrl = locale === "en" ? BASE_URL : `${BASE_URL}/${locale}`;
+    pageUrl = locale === "en" ? SITE_URL : `${SITE_URL}/${locale}`;
   }
+
+  // Process image URL from JSON - use IMAGE_URL if it's a relative path, otherwise use as-is
+  // If no image in JSON, use top-ranked site's hero image
+  let ogImageUrl = openGraphData.image || getTopSiteImageUrl("top10chat", IMAGE_URL);
+  if (ogImageUrl && ogImageUrl.startsWith("/")) {
+    ogImageUrl = `${IMAGE_URL}${ogImageUrl}`;
+  } else if (ogImageUrl && !ogImageUrl.startsWith("http")) {
+    ogImageUrl = `${IMAGE_URL}/${ogImageUrl}`;
+  }
+
+  // Process metadataBase from JSON
+  const metadataBaseUrl = seoData.metadataBase && seoData.metadataBase !== "" 
+    ? (seoData.metadataBase.startsWith("http") ? seoData.metadataBase : `${SITE_URL}${seoData.metadataBase}`)
+    : SITE_URL;
 
   // Replace {year} with current year in title
   const currentYear = new Date().getFullYear();
@@ -54,15 +72,15 @@ export async function generateMetadata({
   const finalOpenGraphTitle = (openGraphData.title || seoData.title || "Top 10 Chat Sites").replace("{year}", currentYear.toString());
 
   return {
-    metadataBase: seoData.metadataBase ? new URL(seoData.metadataBase) : new URL(BASE_URL),
+    metadataBase: new URL(metadataBaseUrl),
     title: finalTitle,
     description: seoData.description || "",
     openGraph: {
       type: openGraphData.type || "website",
       title: finalOpenGraphTitle,
       description: openGraphData.description || seoData.description || "",
-      images: openGraphData.image ? [openGraphData.image] : [{
-        url: `${BASE_URL}/images/og-image.jpg`,
+      images: [{
+        url: ogImageUrl,
         width: 1200,
         height: 630,
         alt: finalOpenGraphTitle,
@@ -75,7 +93,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: finalOpenGraphTitle,
       description: openGraphData.description || seoData.description || "",
-      images: openGraphData.image ? [openGraphData.image] : [`${BASE_URL}/images/og-image.jpg`],
+      images: [ogImageUrl],
     },
     alternates: {
       canonical: canonical,

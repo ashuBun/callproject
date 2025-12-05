@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import messagesMap from "@/messages";
 import type { AppLocale } from "@/messages";
+import { getTopSiteImageUrl } from "@/lib/getTopSiteImage";
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
@@ -59,21 +60,36 @@ export async function generateMetadata({
   const currentYear = new Date().getFullYear();
   const titleWithSuffix = `${capitalizedTitle} - #1 Video Chat with Girls | Official Site | ${currentYear}`;
 
-  // Generate full page URL dynamically
-  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://x-chats.com";
+  // Use environment variables for URLs
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "";
+  const IMAGE_URL = process.env.NEXT_PUBLIC_IMAGE_URL || SITE_URL;
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") || "";
   
   // Use pathname if available, otherwise construct from locale and slug
-  let pageUrl = `${BASE_URL}/sites/${slug}`;
+  let pageUrl = `${SITE_URL}/site/${slug}`;
   if (pathname && pathname !== "/") {
-    pageUrl = `${BASE_URL}${pathname}`;
+    pageUrl = `${SITE_URL}${pathname}`;
   } else {
-    pageUrl = locale === "en" ? `${BASE_URL}/sites/${slug}` : `${BASE_URL}/${locale}/sites/${slug}`;
+    pageUrl = locale === "en" ? `${SITE_URL}/site/${slug}` : `${SITE_URL}/${locale}/site/${slug}`;
   }
 
+  // Generate languages object for alternates from available locales with full URLs
+  const cleanSiteUrl = SITE_URL.replace(/\/e-01\/?$/, "").replace(/\/e-01\//, "/");
+  const languages: Record<string, string> = {};
+  Object.keys(messagesMap).forEach((loc) => {
+    const path = `/${loc}/site/${slug}`;
+    languages[loc] = cleanSiteUrl ? `${cleanSiteUrl}${path}` : path;
+  });
+
+  // Generate canonical URL
+  const canonical = locale === "en" ? `/site/${slug}` : `/${locale}/site/${slug}`;
+
+  // Get top-ranked site's hero image for og:image
+  const ogImageUrl = getTopSiteImageUrl("top10chat", IMAGE_URL);
+
   return {
-    metadataBase: new URL(BASE_URL),
+    metadataBase: new URL(SITE_URL),
     title: titleWithSuffix,
     description: finalDescription,
     keywords: `${capitalizedTitle}, ${finalTitle}, adult cam, live chat, cam site, ${finalCategory}`,
@@ -85,7 +101,7 @@ export async function generateMetadata({
       title: titleWithSuffix,
       description: finalDescription,
       images: [{
-        url: `${BASE_URL}/images/og-image.jpg`,
+        url: ogImageUrl,
         width: 1200,
         height: 630,
         alt: titleWithSuffix,
@@ -95,7 +111,11 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: titleWithSuffix,
       description: finalDescription,
-      images: [`${BASE_URL}/images/og-image.jpg`],
+      images: [ogImageUrl],
+    },
+    alternates: {
+      canonical: canonical,
+      languages: languages,
     },
     robots: {
       index: true,

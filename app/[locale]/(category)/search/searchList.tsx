@@ -376,7 +376,7 @@ export default function SearchList() {
                         />
                       </div>
                       <Link
-                        href={`/${locale}/sites/${site.slug}`}
+                        href={`/${locale}/site/${site.slug}`}
                         className="text-black underline uppercase text-[12px] hover:text-[var(--primary)]"
                       >
                         {t("readReview")}

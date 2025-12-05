@@ -28,27 +28,37 @@ export async function generateMetadata({
   const seoData = localization.indexPage?.seo || {};
   const openGraphData = categorySeoData.openGraph || seoData.openGraph || {};
 
-  // Generate languages object for alternates from available locales
+  // Use environment variables for URLs
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "";
+  
+  // Generate languages object for alternates from available locales with full URLs
+  const cleanSiteUrl = SITE_URL.replace(/\/e-01\/?$/, "").replace(/\/e-01\//, "/");
   const languages: Record<string, string> = {};
   Object.keys(messagesMap).forEach((loc) => {
-    languages[loc] = loc === "en" ? "/teenchat" : `/${loc}/teenchat`;
+    const path = `/${loc}/teenchat`;
+    languages[loc] = cleanSiteUrl ? `${cleanSiteUrl}${path}` : path;
   });
 
   // Generate canonical URL
   const canonical = locale === "en" ? "/teenchat" : `/${locale}/teenchat`;
-  
-  // Generate full page URL dynamically
-  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://x-chats.com";
+  const IMAGE_URL = process.env.NEXT_PUBLIC_IMAGE_URL || SITE_URL;
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") || "";
   
   // Use pathname if available, otherwise construct from locale and category
-  let pageUrl = `${BASE_URL}/teenchat`;
+  let pageUrl = `${SITE_URL}/teenchat`;
   if (pathname && pathname !== "/") {
-    pageUrl = `${BASE_URL}${pathname}`;
+    pageUrl = `${SITE_URL}${pathname}`;
   } else {
-    pageUrl = locale === "en" ? `${BASE_URL}/teenchat` : `${BASE_URL}/${locale}/teenchat`;
+    pageUrl = locale === "en" ? `${SITE_URL}/teenchat` : `${SITE_URL}/${locale}/teenchat`;
   }
+
+  // Process metadataBase from JSON
+  const metadataBaseUrl = categorySeoData.metadataBase && categorySeoData.metadataBase !== ""
+    ? (categorySeoData.metadataBase.startsWith("http") ? categorySeoData.metadataBase : `${SITE_URL}${categorySeoData.metadataBase}`)
+    : (seoData.metadataBase && seoData.metadataBase !== ""
+      ? (seoData.metadataBase.startsWith("http") ? seoData.metadataBase : `${SITE_URL}${seoData.metadataBase}`)
+      : SITE_URL);
 
   // Replace {year} with current year in title
   const currentYear = new Date().getFullYear();
@@ -56,10 +66,10 @@ export async function generateMetadata({
   const finalOpenGraphTitle = (openGraphData.title || categorySeoData.title || seoData.title || "Teen Chat Rooms").replace("{year}", currentYear.toString());
 
   // Get top-ranked site's hero image for og:image
-  const ogImageUrl = getTopSiteImageUrl("teen", BASE_URL);
+  const ogImageUrl = getTopSiteImageUrl("teen", IMAGE_URL);
 
   return {
-    metadataBase: categorySeoData.metadataBase ? new URL(categorySeoData.metadataBase) : (seoData.metadataBase ? new URL(seoData.metadataBase) : new URL(BASE_URL)),
+    metadataBase: new URL(metadataBaseUrl),
     title: finalTitle,
     description: categorySeoData.description || seoData.description || "",
     openGraph: {

@@ -8,9 +8,12 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MetaMaskErrorBoundary from "@/components/MetaMaskErrorBoundary";
 import Script from "next/script";
+import messagesMap from "@/messages";
+import { getTopSiteImageUrl } from "@/lib/getTopSiteImage";
 
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "https://next.x-u.cc";
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://x-chats.com";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "";
+const IMAGE_URL = process.env.NEXT_PUBLIC_IMAGE_URL || SITE_URL;
 
 
 export async function generateMetadata({
@@ -38,18 +41,21 @@ export async function generateMetadata({
   
   // Construct the current page URL based on pathname
   // Note: Individual pages will override this URL with their specific URLs
-  let currentUrl = BASE_URL;
+  let currentUrl = SITE_URL;
   if (pathname && pathname !== "/") {
     // Pathname already includes locale (e.g., /en/bbwchat or /fr/bbwchat)
-    // Just prepend BASE_URL
-    currentUrl = `${BASE_URL}${pathname}`;
+    // Just prepend SITE_URL
+    currentUrl = `${SITE_URL}${pathname}`;
   } else {
     // Fallback: construct URL based on locale only
-    currentUrl = locale === "en" ? BASE_URL : `${BASE_URL}/${locale}`;
+    currentUrl = locale === "en" ? SITE_URL : `${SITE_URL}/${locale}`;
   }
 
+  // Get top-ranked site's hero image for og:image
+  const ogImageUrl = getTopSiteImageUrl("top10chat", IMAGE_URL);
+
   return {
-    metadataBase: new URL(BASE_URL),
+    metadataBase: new URL(SITE_URL),
     title: metadata.title,
     description: metadata.description,
     keywords: metadata.keywords || "chat, rooms, online, cam girls",
@@ -73,7 +79,7 @@ export async function generateMetadata({
       description: metadata.description, // This will be overridden by page-specific descriptions
       images: [
         {
-          url: `${BASE_URL}/images/og-image.jpg`,
+          url: ogImageUrl,
           width: 1200,
           height: 630,
           alt: metadata.title,
@@ -87,12 +93,15 @@ export async function generateMetadata({
     },
     alternates: {
       canonical: locale === "en" ? "/" : `/${locale}`,
-      languages: {
-        en: "/",
-        de: "/de",
-        fr: "/fr",
-        es: "/es",
-      },
+      languages: (() => {
+        const cleanSiteUrl = SITE_URL.replace(/\/e-01\/?$/, "").replace(/\/e-01\//, "/");
+        const langs: Record<string, string> = {};
+        Object.keys(messagesMap).forEach((loc) => {
+          const path = `/${loc}`;
+          langs[loc] = cleanSiteUrl ? `${cleanSiteUrl}${path}` : path;
+        });
+        return langs;
+      })(),
     },
   };
 }
