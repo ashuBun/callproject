@@ -6,7 +6,7 @@ import { useTranslations, useLocale, useMessages } from "next-intl";
 import { Check } from "lucide-react";
 import camSites from "@/data/sites.json";
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000";
+const SERVER_URL = process.env.NEXT_PUBLIC_IMG_URL || process.env.NEXT_PUBLIC_IMAGE_URL || process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000";
 
 interface SinglePageProps {
   pageKey?: string;

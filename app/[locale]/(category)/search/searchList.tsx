@@ -8,7 +8,7 @@ import camSites from "@/data/sites.json";
 import HeroBanner from "@/components/banners/HeroBanner";
 import messagesMap from "@/messages";
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
+const SERVER_URL = process.env.NEXT_PUBLIC_IMG_URL || process.env.NEXT_PUBLIC_IMAGE_URL || process.env.NEXT_PUBLIC_SERVER_URL;
 
 // Map search terms to category keywords
 const categoryMappings: Record<string, string[]> = {

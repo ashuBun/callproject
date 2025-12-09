@@ -62,20 +62,21 @@ export async function generateMetadata({
 
   // Use environment variables for URLs
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "";
-  const IMAGE_URL = process.env.NEXT_PUBLIC_IMAGE_URL || SITE_URL;
+  const IMAGE_URL = process.env.NEXT_PUBLIC_IMG_URL || process.env.NEXT_PUBLIC_IMAGE_URL || SITE_URL;
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") || "";
   
   // Use pathname if available, otherwise construct from locale and slug
-  let pageUrl = `${SITE_URL}/site/${slug}`;
+  const baseUrl = SITE_URL.replace(/\/$/, "");
+  let pageUrl = `${baseUrl}/site/${slug}`;
   if (pathname && pathname !== "/") {
-    pageUrl = `${SITE_URL}${pathname}`;
+    pageUrl = `${baseUrl}${pathname}`;
   } else {
-    pageUrl = locale === "en" ? `${SITE_URL}/site/${slug}` : `${SITE_URL}/${locale}/site/${slug}`;
+    pageUrl = locale === "en" ? `${baseUrl}/site/${slug}` : `${baseUrl}/${locale}/site/${slug}`;
   }
 
   // Generate languages object for alternates from available locales with full URLs
-  const cleanSiteUrl = SITE_URL.replace(/\/e-01\/?$/, "").replace(/\/e-01\//, "/");
+  const cleanSiteUrl = SITE_URL.replace(/\/e-01\/?$/, "").replace(/\/e-01\//, "/").replace(/\/$/, "");
   const languages: Record<string, string> = {};
   Object.keys(messagesMap).forEach((loc) => {
     const path = `/${loc}/site/${slug}`;

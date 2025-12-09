@@ -7,7 +7,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { Menu, Search, X } from "lucide-react";
 import LanguageSelector from "./LanguageSelector";
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
+const SERVER_URL = process.env.NEXT_PUBLIC_IMG_URL || process.env.NEXT_PUBLIC_IMAGE_URL || process.env.NEXT_PUBLIC_SERVER_URL;
 
 export default function Header() {
   const t = useTranslations("Header.nav");

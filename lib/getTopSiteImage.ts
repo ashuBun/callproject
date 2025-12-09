@@ -102,7 +102,7 @@ function getTopSiteOverall(): Site | null {
  * Get the full image URL for og:image
  */
 export function getTopSiteImageUrl(category: string, baseUrl?: string): string {
-  const IMAGE_URL = baseUrl || process.env.NEXT_PUBLIC_IMAGE_URL || process.env.NEXT_PUBLIC_BASE_URL || "";
+  const IMAGE_URL = baseUrl || process.env.NEXT_PUBLIC_IMG_URL || process.env.NEXT_PUBLIC_IMAGE_URL || process.env.NEXT_PUBLIC_BASE_URL || "";
   
   let heroPath = getTopSiteImageByCategory(category);
   

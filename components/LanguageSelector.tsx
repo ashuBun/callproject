@@ -6,7 +6,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useLocale } from "next-intl";
 import { ChevronDown } from "lucide-react";
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
+const SERVER_URL = process.env.NEXT_PUBLIC_IMG_URL || process.env.NEXT_PUBLIC_IMAGE_URL || process.env.NEXT_PUBLIC_SERVER_URL;
 
 const languages = [
   { code: "en", name: "English", flag:  `${SERVER_URL}/flags/en.svg` },
