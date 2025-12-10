@@ -6,7 +6,7 @@ import { useTranslations, useLocale, useMessages } from "next-intl";
 import { Check, DollarSign, Crown } from "lucide-react";
 
 import camSites from "@/data/sites.json"; // Your JSON data
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
+const SERVER_URL = process.env.NEXT_PUBLIC_IMG_URL || process.env.NEXT_PUBLIC_IMAGE_URL || process.env.NEXT_PUBLIC_SERVER_URL;
 type Props = {
   category?: string;
   siteKey: string;

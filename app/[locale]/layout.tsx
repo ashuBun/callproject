@@ -11,9 +11,9 @@ import Script from "next/script";
 import messagesMap from "@/messages";
 import { getTopSiteImageUrl } from "@/lib/getTopSiteImage";
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "https://next.x-u.cc";
+const SERVER_URL = process.env.NEXT_PUBLIC_IMG_URL || process.env.NEXT_PUBLIC_IMAGE_URL || process.env.NEXT_PUBLIC_SERVER_URL || "https://next.x-u.cc";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "";
-const IMAGE_URL = process.env.NEXT_PUBLIC_IMAGE_URL || SITE_URL;
+const IMAGE_URL = process.env.NEXT_PUBLIC_IMG_URL || process.env.NEXT_PUBLIC_IMAGE_URL || SITE_URL;
 
 
 export async function generateMetadata({
@@ -41,14 +41,15 @@ export async function generateMetadata({
   
   // Construct the current page URL based on pathname
   // Note: Individual pages will override this URL with their specific URLs
-  let currentUrl = SITE_URL;
+  const baseUrl = SITE_URL.replace(/\/$/, "");
+  let currentUrl = baseUrl;
   if (pathname && pathname !== "/") {
     // Pathname already includes locale (e.g., /en/bbwchat or /fr/bbwchat)
     // Just prepend SITE_URL
-    currentUrl = `${SITE_URL}${pathname}`;
+    currentUrl = `${baseUrl}${pathname}`;
   } else {
     // Fallback: construct URL based on locale only
-    currentUrl = locale === "en" ? SITE_URL : `${SITE_URL}/${locale}`;
+    currentUrl = locale === "en" ? baseUrl : `${baseUrl}/${locale}`;
   }
 
   // Get top-ranked site's hero image for og:image
@@ -94,7 +95,7 @@ export async function generateMetadata({
     alternates: {
       canonical: locale === "en" ? "/" : `/${locale}`,
       languages: (() => {
-        const cleanSiteUrl = SITE_URL.replace(/\/e-01\/?$/, "").replace(/\/e-01\//, "/");
+        const cleanSiteUrl = SITE_URL.replace(/\/e-01\/?$/, "").replace(/\/e-01\//, "/").replace(/\/$/, "");
         const langs: Record<string, string> = {};
         Object.keys(messagesMap).forEach((loc) => {
           const path = `/${loc}`;

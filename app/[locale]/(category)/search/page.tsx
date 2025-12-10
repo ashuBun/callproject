@@ -55,16 +55,17 @@ export async function generateMetadata({
 
   // Use environment variables for URLs
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "";
-  const IMAGE_URL = process.env.NEXT_PUBLIC_IMAGE_URL || SITE_URL;
+  const IMAGE_URL = process.env.NEXT_PUBLIC_IMG_URL || process.env.NEXT_PUBLIC_IMAGE_URL || SITE_URL;
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") || "";
   
   // Use pathname if available, otherwise construct from locale
-  let pageUrl = `${SITE_URL}/search`;
+  const baseUrl = SITE_URL.replace(/\/$/, "");
+  let pageUrl = `${baseUrl}/search`;
   if (pathname && pathname !== "/") {
-    pageUrl = `${SITE_URL}${pathname}${hasQuery ? `?q=${encodeURIComponent(query)}` : ""}`;
+    pageUrl = `${baseUrl}${pathname}${hasQuery ? `?q=${encodeURIComponent(query)}` : ""}`;
   } else {
-    pageUrl = locale === "en" ? `${SITE_URL}/search${hasQuery ? `?q=${encodeURIComponent(query)}` : ""}` : `${SITE_URL}/${locale}/search${hasQuery ? `?q=${encodeURIComponent(query)}` : ""}`;
+    pageUrl = locale === "en" ? `${baseUrl}/search${hasQuery ? `?q=${encodeURIComponent(query)}` : ""}` : `${baseUrl}/${locale}/search${hasQuery ? `?q=${encodeURIComponent(query)}` : ""}`;
   }
 
   // Get top-ranked site's hero image for og:image

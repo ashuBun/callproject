@@ -31,7 +31,7 @@ export async function generateMetadata({
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "";
   
   // Generate languages object for alternates from available locales with full URLs
-  const cleanSiteUrl = SITE_URL.replace(/\/e-01\/?$/, "").replace(/\/e-01\//, "/");
+  const cleanSiteUrl = SITE_URL.replace(/\/e-01\/?$/, "").replace(/\/e-01\//, "/").replace(/\/$/, "");
   const languages: Record<string, string> = {};
   Object.keys(messagesMap).forEach((loc) => {
     const path = `/${loc}/milfchat`;
@@ -40,16 +40,17 @@ export async function generateMetadata({
 
   // Generate canonical URL
   const canonical = locale === "en" ? "/milfchat" : `/${locale}/milfchat`;
-  const IMAGE_URL = process.env.NEXT_PUBLIC_IMAGE_URL || SITE_URL;
+  const IMAGE_URL = process.env.NEXT_PUBLIC_IMG_URL || process.env.NEXT_PUBLIC_IMAGE_URL || SITE_URL;
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") || "";
   
   // Use pathname if available, otherwise construct from locale and category
-  let pageUrl = `${SITE_URL}/milfchat`;
+  const baseUrl = SITE_URL.replace(/\/$/, "");
+  let pageUrl = `${baseUrl}/milfchat`;
   if (pathname && pathname !== "/") {
-    pageUrl = `${SITE_URL}${pathname}`;
+    pageUrl = `${baseUrl}${pathname}`;
   } else {
-    pageUrl = locale === "en" ? `${SITE_URL}/milfchat` : `${SITE_URL}/${locale}/milfchat`;
+    pageUrl = locale === "en" ? `${baseUrl}/milfchat` : `${baseUrl}/${locale}/milfchat`;
   }
 
   // Process metadataBase from JSON
